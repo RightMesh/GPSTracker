@@ -26,9 +26,10 @@ import io.left.rightmesh.util.RightMeshException.RightMeshServiceDisconnectedExc
 public class MainActivity extends AppCompatActivity implements MeshStateListener {
     private static final String TAG = MainActivity.class.getCanonicalName();
     private static final int MESH_PORT = 5001;
+    private static final int DOUBLE_NUM_BYTES = Double.SIZE / Byte.SIZE;
+
 
     private AndroidMeshManager meshManager;
-    private MeshId meshId;
     private MeshId superPeerId;
 
     private LocationListener locationListener;
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
     // Fills a buffer with just lat and long double values, and sends
     // to the super peer assuming it runs on the same mesh port as us
     private void sendLocationToSuperPeer(Location location) {
-        ByteBuffer buffer = ByteBuffer.allocate(Double.BYTES + Double.BYTES);
+        ByteBuffer buffer = ByteBuffer.allocate(DOUBLE_NUM_BYTES + DOUBLE_NUM_BYTES);
         buffer.putDouble(location.getLatitude());
         buffer.putDouble(location.getLongitude());
         try {
@@ -118,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
 
     @Override
     public void meshStateChanged(MeshId meshId, int state) {
-        this.meshId = meshId;
         if (state == SUCCESS) {
             try {
                 // Attempt to bind to a port.
