@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 
+import java.nio.ByteBuffer;
+
 import io.left.rightmesh.android.AndroidMeshManager;
 import io.left.rightmesh.id.MeshId;
 import io.left.rightmesh.mesh.MeshStateListener;
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
 
     private AndroidMeshManager meshManager;
     private MeshId meshId;
+    private MeshId superPeerId;
 
     private LocationListener locationListener;
 
@@ -72,8 +75,17 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
     }
 
-    // TODO
+    // Fills a buffer with just lat and long double values, and sends
+    // to the super peer assuming it runs on the same mesh port as us
     private void sendLocationToSuperPeer(Location location) {
+        ByteBuffer buffer = ByteBuffer.allocate(Double.BYTES + Double.BYTES);
+        buffer.putDouble(location.getLatitude());
+        buffer.putDouble(location.getLongitude());
+        try {
+            meshManager.sendDataReliable(superPeerId, MESH_PORT, buffer.array());
+        } catch (RightMeshException e) {
+            Logger.log(TAG, "Failed to send location: " +  location.toString());
+        }
     }
 
     /**
@@ -111,6 +123,9 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
             try {
                 // Attempt to bind to a port.
                 meshManager.bind(MESH_PORT);
+
+                // TODO: Get SuperPeer ID somehow
+                this.superPeerId = new MeshId(new byte[]{});
             } catch (RightMeshServiceDisconnectedException sde) {
                 Logger.fatal(TAG, "Service disconnected while binding, with message: "
                         + sde.getMessage());
