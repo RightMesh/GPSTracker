@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
 
     /**
      * Initializes references to meshManager and sets up the GPS location listeners
+     *
      * @param savedInstanceState
      */
     @Override
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+                sendLocationToSuperPeer(location);
             }
 
             @Override
@@ -62,18 +64,16 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
             }
         };
 
-        // Register the listener with the Location Manager to receive location updates
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // We do not have permissions to access the device location
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+    }
+
+    // TODO
+    private void sendLocationToSuperPeer(Location location) {
     }
 
     /**
