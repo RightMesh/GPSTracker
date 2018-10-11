@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
     private static final int MESH_PORT = 5001;
     private static final int DOUBLE_NUM_BYTES = Double.SIZE / Byte.SIZE;
 
-
     private AndroidMeshManager meshManager;
     private MeshId superPeerId;
 
