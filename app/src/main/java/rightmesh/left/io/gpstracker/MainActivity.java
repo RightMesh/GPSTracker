@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
     private static final String TAG = MainActivity.class.getCanonicalName();
     private static final int MESH_PORT = 5001;
     private static final int DOUBLE_NUM_BYTES = Double.SIZE / Byte.SIZE;
+    private static final int GPS_PERMISSIONS_REQUEST_CODE = 9898;
 
     // TODO: fill in with your SuperPeer URL
     private static final String SUPER_PEER_URL = "192.168.3.151";
@@ -76,12 +77,34 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
             }
         };
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+        while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // We do not have permissions to access the device location
-            return;
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION},
+                    GPS_PERMISSIONS_REQUEST_CODE);
         }
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case GPS_PERMISSIONS_REQUEST_CODE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+                    Toast.makeText(getApplicationContext(), "Need permissions to run", Toast.LENGTH_LONG).show();
+                    finish();
+                }
+            }
+        }
     }
 
     // Fills a buffer with just lat and long double values, and sends
@@ -93,7 +116,8 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         try {
             // TODO: fill in with your local SuperPeer MeshId
             MeshId hardcodedSuperPeerId = MeshId.fromString("0x656284abf20af4192d86f2f6f3e7ce04e5718302");
-            meshManager.sendDataReliable(hardcodedSuperPeerId, MESH_PORT, buffer.array());
+            int dataID = meshManager.sendDataReliable(hardcodedSuperPeerId, MESH_PORT, buffer.array());
+            Logger.log(TAG, "Sent to dataID: " + dataID);
         } catch (RightMeshException e) {
             Logger.log(TAG, "Failed to send location: " + location.toString());
         }
@@ -109,6 +133,15 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         super.onResume();
         try {
             meshManager.resume();
+            LocationManager manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION},
+                        GPS_PERMISSIONS_REQUEST_CODE);
+            }
+            sendLocationToSuperPeer(manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
         } catch (RightMeshServiceDisconnectedException e) {
             Logger.fatal(TAG, "Service disconnected before resuming AndroidMeshManager with message"
                     + e.getMessage());
