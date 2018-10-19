@@ -15,12 +15,14 @@ import java.nio.ByteBuffer;
 
 import io.left.rightmesh.android.AndroidMeshManager;
 import io.left.rightmesh.id.MeshId;
+import io.left.rightmesh.mesh.MeshManager.RightMeshEvent;
 import io.left.rightmesh.mesh.MeshStateListener;
 import io.left.rightmesh.util.Logger;
 import io.left.rightmesh.util.RightMeshException;
 import io.left.rightmesh.util.RightMeshException.RightMeshServiceDisconnectedException;
 
 import static android.widget.Toast.LENGTH_SHORT;
+import static io.left.rightmesh.mesh.MeshManager.PEER_CHANGED;
 
 /**
  * An activity that listens to GPS updates and reports them back to the RightMesh SuperPeer.
@@ -56,37 +58,6 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
                         MainActivity.this,
                         null,
                         SUPER_PEER_URL);
-
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                sendLocationToSuperPeer(location);
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-            }
-        };
-
-        while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // We do not have permissions to access the device location
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION},
-                    GPS_PERMISSIONS_REQUEST_CODE);
-        }
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-
     }
 
     @Override
@@ -133,15 +104,6 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         super.onResume();
         try {
             meshManager.resume();
-            LocationManager manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-            while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION},
-                        GPS_PERMISSIONS_REQUEST_CODE);
-            }
-            sendLocationToSuperPeer(manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER));
         } catch (RightMeshServiceDisconnectedException e) {
             Logger.fatal(TAG, "Service disconnected before resuming AndroidMeshManager with message"
                     + e.getMessage());
@@ -168,6 +130,10 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
             try {
                 // Attempt to bind to a port.
                 meshManager.bind(MESH_PORT);
+                meshManager.on(PEER_CHANGED, (RightMeshEvent event) -> {
+                    registerLocationListener();
+                    sendLocationToSuperPeer(getCurrentLocation());
+                });
             } catch (RightMeshServiceDisconnectedException sde) {
                 Logger.fatal(TAG, "Service disconnected while binding, with message: "
                         + sde.getMessage());
@@ -175,5 +141,47 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
                 Logger.fatal(TAG, "MeshPort already bound, with message: " + rme.getMessage());
             }
         }
+    }
+
+    private void registerLocationListener() {
+        while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // We do not have permissions to access the device location
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION},
+                    GPS_PERMISSIONS_REQUEST_CODE);
+        }
+        ((LocationManager) this.getSystemService(Context.LOCATION_SERVICE)).requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0,
+                new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        sendLocationToSuperPeer(location);
+                    }
+
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String provider) {
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String provider) {
+                    }
+                });
+    }
+
+    private Location getCurrentLocation() {
+        while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION},
+                    GPS_PERMISSIONS_REQUEST_CODE);
+        }
+        return ((LocationManager) this.getSystemService(Context.LOCATION_SERVICE))
+                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
     }
 }
