@@ -58,6 +58,10 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
                         SUPER_PEER_URL);
     }
 
+    /**
+     * Checks that GPS permissions were granted, otherwise alerts the user
+     * that we need permissions to run and then finishes the activity.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -76,8 +80,12 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         }
     }
 
-    // Fills a buffer with just lat and long double values, and sends
-    // to the super peer assuming it runs on the same mesh port as us
+    /**
+     * Fills a buffer with just lat and long double values, and sends
+     * to the super peer assuming it runs on the same mesh port as us
+     *
+     * @param location location that will be sent over RightMesh to the SuperPeer
+     */
     private void sendLocationToSuperPeer(Location location) {
         ByteBuffer buffer = ByteBuffer.allocate(DOUBLE_NUM_BYTES + DOUBLE_NUM_BYTES);
         buffer.putDouble(location.getLatitude());
@@ -122,6 +130,13 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         }
     }
 
+    /**
+     * If the mesh state change is a SUCCESS bind to our MESH_PORT.
+     * Registers a listener on PEER_CHANGED event to register our LocationListener;
+     * we assume at this point the Mesh service is available and running.
+     *
+     * Finally we send our current location to our SuperPeer.
+     */
     @Override
     public void meshStateChanged(MeshId meshId, int state) {
         if (state == SUCCESS) {
@@ -141,6 +156,10 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         }
     }
 
+    /**
+     * Spins on permissions checks and does not progress to registering a LocationListener
+     * unless the user allows. Then registers the listener (we only care about location change here).
+     */
     private void registerLocationListener() {
         while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -171,6 +190,13 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
                 });
     }
 
+    /**
+     * If the mesh state change is a SUCCESS bind to our MESH_PORT.
+     * Registers a listener on PEER_CHANGED event to register our LocationListener;
+     * we assume at this point the Mesh service is available and running.
+     *
+     * Finally we send our current location to our SuperPeer.
+     */
     private Location getCurrentLocation() {
         while (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
