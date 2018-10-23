@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
     // TODO: fill in with your SuperPeer URL
     private static final String SUPER_PEER_URL = "192.168.3.151";
 
-    public AndroidMeshManager androidMeshManager;
+    private AndroidMeshManager androidMeshManager;
 
     /**
      * Initializes references to androidMeshManager and sets up the GPS location listeners.
