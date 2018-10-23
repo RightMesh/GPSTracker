@@ -39,8 +39,6 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
 
     private AndroidMeshManager meshManager;
 
-    private LocationListener locationListener;
-
     /**
      * Initializes references to meshManager and sets up the GPS location listeners
      *
