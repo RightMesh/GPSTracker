@@ -1,38 +1,23 @@
-apply plugin: 'com.android.application'
-
-buildscript {
-    repositories {
-        maven {
-            url "https://research.rightmesh.io/artifactory/libs-local"
-            credentials {
-                username artifactory_app_username
-                password artifactory_app_password
-            }
-        }
-        mavenCentral()
-        google()
-        jcenter()
-    }
-    configurations.all {
-        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-    }
-    dependencies {
-        classpath 'io.left.rightmesh:rightmesh-plugin:1.6'
-    }
+plugins {
+    id 'com.android.application'
+    id 'io.left.rightmesh.rightmesh-plugin' version '1.8.1'
 }
-apply plugin: 'io.left.rightmesh.rightmesh-plugin'
+
 preBuild.dependsOn("rightmesh")
 
 repositories {
-    //maven { url 'https://maven.fabric.io/public' }
     mavenCentral()
     jcenter()
+    google()
     maven {
-        url "https://research.rightmesh.io/artifactory/libs-local"
+        url "http://artifactory.rightmesh.io/artifactory/maven"
         credentials {
-            username artifactory_app_username
-            password artifactory_app_password
+            username rightmesh_build_username
+            password rightmesh_build_password
         }
+    }
+    maven {
+        url "https://dl.bintray.com/ethereum/maven"
     }
 }
 
@@ -62,7 +47,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation ('io.left.rightmesh:rightmesh-library-dev:0.9.0')
+    implementation 'io.left.rightmesh:lib-rightmesh-android:0.10.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
