@@ -2,22 +2,18 @@ package rightmesh.left.io.gpstracker;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.widget.Toast.LENGTH_SHORT;
 import static io.left.rightmesh.mesh.MeshManager.PEER_CHANGED;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -27,7 +23,6 @@ import io.left.rightmesh.id.MeshId;
 import io.left.rightmesh.mesh.MeshManager.RightMeshEvent;
 import io.left.rightmesh.mesh.MeshStateListener;
 import io.left.rightmesh.util.Logger;
-import io.left.rightmesh.util.Result;
 import io.left.rightmesh.util.RightMeshException;
 import io.left.rightmesh.util.RightMeshException.RightMeshServiceDisconnectedException;
 import rightmesh.left.io.gpstracker.utils.PermissionUtil;
@@ -101,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
                         MainActivity.this.finish();
                     }
                 });
+        permissionUtil.check();
     }
 
     /**
@@ -212,6 +208,18 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
     private void registerLocationListener() {
         locationUtil.requestLocationUpdate(new LocationCallback() {
             @Override
+            public void onLocationAvailability(LocationAvailability locationAvailability) {
+                if(locationAvailability.isLocationAvailable()){
+                    tvNotification.setText("Sending your GPS to App SuperPeer!");
+                }else{
+                    tvNotification.setText("Location is unavailable");
+                    if(!locationUtil.isLocationProviderAvailable(getApplicationContext())){
+                        locationUtil.showDialogEnableGPS();
+                    }
+                }
+            }
+
+            @Override
             public void onLocationResult(LocationResult locationResult) {
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
@@ -219,6 +227,5 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
                 }
             }
         });
-
     }
 }

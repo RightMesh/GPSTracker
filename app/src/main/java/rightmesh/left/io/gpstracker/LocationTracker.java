@@ -8,15 +8,21 @@ import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.LifecycleObserver;
 import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
@@ -33,12 +39,12 @@ public class LocationTracker implements LifecycleObserver {
 
     private LocationRequest locationRequest;
 
-    private boolean isLocationRequested = false;
     private LocationCallback locationCallback;
 
     /**
      * Constructor
-     * @param activity current activity
+     *
+     * @param activity  current activity
      * @param lifecycle get by getLifecycle() in Activity, Fragment. Used to observe lifecycle of Activity or Fragment
      */
     public LocationTracker(Activity activity, Lifecycle lifecycle) {
@@ -86,23 +92,21 @@ public class LocationTracker implements LifecycleObserver {
 
     @SuppressLint("MissingPermission")
     public void requestLocationUpdate(LocationCallback locationCallback) {
-        if (!isLocationRequested) {
-            this.locationCallback = locationCallback;
-            this.locationRequest = new LocationRequest()
-                    .setInterval(interval)
-                    .setFastestInterval(fastestInterval)
-                    .setPriority(priority);
+        this.locationCallback = locationCallback;
+        this.locationRequest = new LocationRequest()
+                .setInterval(interval)
+                .setFastestInterval(fastestInterval)
+                .setPriority(priority);
 
-            isLocationRequested = true;
-            fusedLocationProviderClient.requestLocationUpdates(locationRequest,
-                    locationCallback,
-                    null);
+        checkLocationSettings();
 
-        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                null);
+
     }
 
-    private void removeLocationUpdate(){
-        isLocationRequested = false;
+    private void removeLocationUpdate() {
         if (fusedLocationProviderClient != null && locationCallback != null) {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback);
 
@@ -124,5 +128,37 @@ public class LocationTracker implements LifecycleObserver {
         //enable GC to clean object
         activity = null;
         removeLocationUpdate();
+    }
+
+    public boolean isLocationProviderAvailable(Context mContext)
+    {
+        LocationManager lm = (LocationManager)
+                mContext.getSystemService(Context.LOCATION_SERVICE);
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    public void showDialogEnableGPS(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("GPS is not found");  // GPS not found
+        builder.setMessage("Turn on GPS?"); // Want to enable?
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                activity.startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        });
+        builder.setNegativeButton("NO", null);
+        builder.create().show();
+    }
+
+    private void checkLocationSettings(){
+        // Create LocationSettingsRequest object using location request
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(locationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        // Check whether location settings are satisfied
+        // https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
+        SettingsClient settingsClient = LocationServices.getSettingsClient(activity);
+        settingsClient.checkLocationSettings(locationSettingsRequest);
     }
 }

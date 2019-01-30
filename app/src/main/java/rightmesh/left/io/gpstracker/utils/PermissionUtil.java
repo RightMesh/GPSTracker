@@ -98,7 +98,7 @@ public class PermissionUtil implements LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void onDestroy() {
         callback = null;
-
+        activity = null;
     }
 
     public interface PermissionCallback {
