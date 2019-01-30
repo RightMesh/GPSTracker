@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
                         MainActivity.this.finish();
                     }
                 });
-        permissionUtil.check();
     }
 
     /**
