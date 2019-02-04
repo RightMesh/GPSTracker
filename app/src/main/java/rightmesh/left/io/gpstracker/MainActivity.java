@@ -2,20 +2,21 @@ package rightmesh.left.io.gpstracker;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.widget.Toast.LENGTH_SHORT;
 import static io.left.rightmesh.mesh.MeshManager.PEER_CHANGED;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 
 import io.left.rightmesh.android.AndroidMeshManager;
 import io.left.rightmesh.id.MeshId;
@@ -27,6 +28,8 @@ import io.left.rightmesh.util.RightMeshException.RightMeshServiceDisconnectedExc
 
 import java.nio.ByteBuffer;
 
+import rightmesh.left.io.gpstracker.utils.PermissionUtil;
+
 /**
  * An activity that listens to GPS updates and reports them back to the RightMesh SuperPeer.
  */
@@ -35,13 +38,16 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
     private static final String TAG = MainActivity.class.getCanonicalName();
     private static final int MESH_PORT = 5001;
     private static final int DOUBLE_NUM_BYTES = Double.SIZE / Byte.SIZE;
-    private static final int GPS_PERMISSIONS_REQUEST_CODE = 9898;
     private static final String SUPER_PEER_ID = "0x656284abf20af4192d86f2f6f3e7ce04e5718302";
 
     // TODO: fill in with your SuperPeer URL
     private static final String SUPER_PEER_URL = "192.168.3.151";
 
     private AndroidMeshManager androidMeshManager;
+    private LocationTracker locationUtil;
+    private PermissionUtil permissionUtil;
+
+    private TextView tvNotification;
 
     /**
      * Initializes references to androidMeshManager and sets up the GPS location listeners.
@@ -53,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        tvNotification = findViewById(R.id.tv_notification);
+
         Logger.log(TAG, "ON CREATE");
 
         androidMeshManager = AndroidMeshManager
@@ -60,36 +68,48 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
                         MainActivity.this,
                         null,
                         SUPER_PEER_URL);
+
+        locationUtil = new LocationTracker(this, getLifecycle())
+                .setInterval(1000)
+                .setFastestInterval(500)
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+
+        permissionUtil = new PermissionUtil(this)
+                .addLifeCycleOwner(getLifecycle())
+                .addPermissions(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION)
+                .callback(new PermissionUtil.PermissionCallback() {
+                    @Override
+                    public void onAllGranted() {
+                        registerLocationListener();
+                        locationUtil.getLastLocation(
+                                MainActivity.this::sendLocationToSuperPeer, e -> {
+                                    Log.e(TAG, e.toString());
+                                });
+                    }
+
+                    @Override
+                    public void onDenied(@NonNull String[] deniedPermissions) {
+                        Toast.makeText(
+                                getApplicationContext(),
+                                "Need permissions to run",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        MainActivity.this.finish();
+                    }
+                });
     }
 
     /**
      * Checks that GPS permissions were granted, otherwise alerts the user
      * that we need permissions to run and then finishes the activity.
      */
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case GPS_PERMISSIONS_REQUEST_CODE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                } else {
-                    Toast.makeText(
-                            getApplicationContext(),
-                            "Need permissions to run",
-                            Toast.LENGTH_LONG
-                    ).show();
-                    finish();
-                }
-            }
-            break;
-            default:
-                Logger.log(TAG, "Non GPS permissions request code");
-                break;
-        }
+                                           String[] permissions,
+                                           int[] grantResults) {
+        permissionUtil.handleResult(requestCode, permissions, grantResults);
     }
 
     /**
@@ -99,6 +119,13 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
      * @param location location that will be sent over RightMesh to the SuperPeer
      */
     private void sendLocationToSuperPeer(Location location) {
+        if (location == null) {
+            Log.d(TAG, "location is null");
+            return;
+        }
+
+        tvNotification.setText("Sending your GPS to App SuperPeer!");
+
         ByteBuffer buffer = ByteBuffer.allocate(DOUBLE_NUM_BYTES + DOUBLE_NUM_BYTES);
         buffer.putDouble(location.getLatitude());
         buffer.putDouble(location.getLongitude());
@@ -160,12 +187,11 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
     public void meshStateChanged(MeshId meshId, int state) {
         if (state == SUCCESS) {
             try {
+                tvNotification.setText("Connected! Fetching current location...");
                 // Attempt to bind to a port.
                 androidMeshManager.bind(MESH_PORT);
-                androidMeshManager.on(PEER_CHANGED, (RightMeshEvent event) -> {
-                    registerLocationListener();
-                    sendLocationToSuperPeer(getCurrentLocation());
-                });
+                androidMeshManager.on(PEER_CHANGED,
+                        (RightMeshEvent event) -> runOnUiThread(() -> permissionUtil.check()));
             } catch (RightMeshServiceDisconnectedException sde) {
                 Logger.fatal(TAG, "Service disconnected while binding, with message: "
                         + sde.getMessage());
@@ -181,55 +207,26 @@ public class MainActivity extends AppCompatActivity implements MeshStateListener
      * Then registers the listener (we only care about location change here).
      */
     private void registerLocationListener() {
-        while (ActivityCompat.checkSelfPermission(
-                this, ACCESS_FINE_LOCATION) != PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(
-                        this, ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
-            // We do not have permissions to access the device location
-            ActivityCompat.requestPermissions(this,
-                    new String[]{ACCESS_FINE_LOCATION,
-                            ACCESS_COARSE_LOCATION},
-                    GPS_PERMISSIONS_REQUEST_CODE);
-        }
-        ((LocationManager) this.getSystemService(Context.LOCATION_SERVICE)).requestLocationUpdates(
-                LocationManager.NETWORK_PROVIDER, 0, 0,
-                new LocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        sendLocationToSuperPeer(location);
+        locationUtil.requestLocationUpdate(new LocationCallback() {
+            @Override
+            public void onLocationAvailability(LocationAvailability locationAvailability) {
+                if (locationAvailability.isLocationAvailable()) {
+                    tvNotification.setText("Sending your GPS to App SuperPeer!");
+                } else {
+                    tvNotification.setText("Location is unavailable");
+                    if (!locationUtil.isLocationProviderAvailable(getApplicationContext())) {
+                        locationUtil.showDialogEnableGPS();
                     }
+                }
+            }
 
-                    @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {
-                    }
-
-                    @Override
-                    public void onProviderEnabled(String provider) {
-                    }
-
-                    @Override
-                    public void onProviderDisabled(String provider) {
-                    }
-                });
-    }
-
-    /**
-     * If the mesh state change is a SUCCESS bind to our MESH_PORT.
-     * Registers a listener on PEER_CHANGED event to register our LocationListener;
-     * we assume at this point the Mesh service is available and running.
-     * Finally we send our current location to our SuperPeer.
-     */
-    private Location getCurrentLocation() {
-        while (ActivityCompat.checkSelfPermission(
-                this, ACCESS_FINE_LOCATION) != PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(
-                this, ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION},
-                    GPS_PERMISSIONS_REQUEST_CODE);
-        }
-        return ((LocationManager) this.getSystemService(Context.LOCATION_SERVICE))
-                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                Location location = locationResult.getLastLocation();
+                if (location != null) {
+                    sendLocationToSuperPeer(location);
+                }
+            }
+        });
     }
 }
