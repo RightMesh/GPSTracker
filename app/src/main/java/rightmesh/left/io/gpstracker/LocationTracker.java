@@ -55,6 +55,10 @@ public class LocationTracker implements LifecycleObserver {
         lifecycle.addObserver(this);
     }
 
+    public void setFusedLocationProviderClient(FusedLocationProviderClient fusedLocationProviderClient) {
+        this.fusedLocationProviderClient = fusedLocationProviderClient;
+    }
+
     /**
      * Set up the preferred the rate in millisecond to receive updates.
      *
@@ -112,7 +116,6 @@ public class LocationTracker implements LifecycleObserver {
         fusedLocationProviderClient.requestLocationUpdates(locationRequest,
                 locationCallback,
                 null);
-
     }
 
     /**
