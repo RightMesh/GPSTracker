@@ -3,15 +3,17 @@ package rightmesh.left.io.gpstracker.utils;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.app.Activity;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleObserver;
-import android.arch.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import java.util.ArrayList;
+
+import androidx.fragment.app.Fragment;
 
 /**
  * A helper class to ask for permission.
@@ -98,7 +100,7 @@ public class PermissionUtil implements LifecycleObserver {
 
     /**
      * Always put this method in {@link Activity#onRequestPermissionsResult(int, String[], int[])}
-     * or {@link android.support.v4.app.Fragment#onRequestPermissionsResult(int, String[], int[])}
+     * or {@link Fragment#onRequestPermissionsResult(int, String[], int[])}
      * to handle result of permission requesting.<br>
      * Pass the same provided params in onRequestPermissionsResult() to this method
      *

@@ -1,7 +1,7 @@
 package rightmesh.left.io.gpstracker;
 
-import android.arch.core.executor.testing.InstantTaskExecutorRule;
-import android.arch.lifecycle.Lifecycle;
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
+import androidx.lifecycle.Lifecycle;
 
 import org.junit.Before;
 import org.junit.Rule;

@@ -1,21 +1,19 @@
 package rightmesh.left.io.gpstracker;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleObserver;
-import android.arch.lifecycle.OnLifecycleEvent;
+
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -25,6 +23,8 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+
+import androidx.fragment.app.Fragment;
 
 /**
  * Using FusedLocationProviderClient to get location updates.
@@ -55,7 +55,8 @@ public class LocationTracker implements LifecycleObserver {
         lifecycle.addObserver(this);
     }
 
-    public void setFusedLocationProviderClient(FusedLocationProviderClient fusedLocationProviderClient) {
+    public void setFusedLocationProviderClient(FusedLocationProviderClient
+                                                       fusedLocationProviderClient) {
         this.fusedLocationProviderClient = fusedLocationProviderClient;
     }
 
@@ -146,7 +147,7 @@ public class LocationTracker implements LifecycleObserver {
 
     /**
      * Automatically trigger in {@link Activity#onDestroy()} or
-     * {@link android.support.v4.app.Fragment#onDestroy()}.
+     * {@link Fragment#onDestroy()}.
      */
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void destroy() {

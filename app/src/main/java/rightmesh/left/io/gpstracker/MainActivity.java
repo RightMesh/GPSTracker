@@ -6,8 +6,8 @@ import static android.widget.Toast.LENGTH_SHORT;
 
 import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,32 +17,23 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 
-import java.nio.ByteBuffer;
-
-import io.left.rightmesh.id.MeshId;
+import androidx.lifecycle.ViewModelProviders;
 import io.left.rightmesh.util.Logger;
-import io.left.rightmesh.util.RightMeshException;
+
 import rightmesh.left.io.gpstracker.utils.PermissionUtil;
 
 /**
  * An activity that listens to GPS updates and reports them back to the RightMesh SuperPeer.
  */
-
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getCanonicalName();
-    private static final int MESH_PORT = 5001;
-    private static final int DOUBLE_NUM_BYTES = Double.SIZE / Byte.SIZE;
-    private static final String SUPER_PEER_ID = "0x656284abf20af4192d86f2f6f3e7ce04e5718302";
-
-    // TODO: fill in with your SuperPeer URL
-    private static final String SUPER_PEER_URL = "192.168.3.151";
 
     private TextView tvNotification;
 
     private LocationTracker locationUtil;
     private PermissionUtil permissionUtil;
 
-    private RightMeshConnector rightMeshConnector;
+    private MainViewModel viewModel;
 
     /**
      * Initializes references to androidMeshManager and sets up the GPS location listeners.
@@ -56,9 +47,10 @@ public class MainActivity extends AppCompatActivity{
 
         tvNotification = findViewById(R.id.tv_notification);
 
-        Logger.log(TAG, "ON CREATE");
+        initViewModel(savedInstanceState);
+        observeViewModel();
 
-        initRightMeshConnector();
+        Logger.log(TAG, "ON CREATE");
 
         locationUtil = new LocationTracker(this, getLifecycle())
                 .setInterval(1000)
@@ -69,23 +61,36 @@ public class MainActivity extends AppCompatActivity{
     }
 
     /**
-     * Init {@link RightMeshConnector}
+     * Init viewmodel
+     *
+     * @param savedInstanceState avedInstanceState – If the activity is being re-initialized after
+     *                           previously being shut down then this Bundle contains the data it
+     *                           most recently supplied in
      */
-    private void initRightMeshConnector() {
-        rightMeshConnector = new RightMeshConnector(MESH_PORT, getLifecycle());
-        rightMeshConnector.setOnConnectSuccessListener(meshId -> {
-            tvNotification.setText("Connected! Fetching current location...");
+    private void initViewModel(Bundle savedInstanceState) {
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        if (savedInstanceState == null) {
+            viewModel.init(getLifecycle());
+        }
+    }
+
+    /**
+     * Binding data from viewmodel to UI
+     */
+    private void observeViewModel() {
+        viewModel.liveDataNotificationText.observe(this, s -> {
+            tvNotification.setText(s);
         });
-        rightMeshConnector.setOnPeerChangedListener(event -> {
-            /**
-             * If the mesh state change is a SUCCESS bind to our MESH_PORT.
-             * Registers a listener on PEER_CHANGED event to register our LocationListener;
-             * we assume at this point the Mesh service is available and running.
-             * Finally we send our current location to our SuperPeer.
-             */
-            runOnUiThread(() -> permissionUtil.check());
+        viewModel.liveDataMsgToast.observe(this, s -> {
+            Toast.makeText(
+                    getApplicationContext(),
+                    s,
+                    LENGTH_SHORT
+            ).show();
         });
-        rightMeshConnector.connect(getApplicationContext(), SUPER_PEER_URL);
+        viewModel.liveDataPeerChangeEvent.observe(this, rightMeshEvent -> {
+            permissionUtil.check();
+        });
     }
 
     /**
@@ -100,7 +105,9 @@ public class MainActivity extends AppCompatActivity{
                     public void onAllGranted() {
                         registerLocationListener();
                         locationUtil.getLastLocation(
-                                MainActivity.this::sendLocationToSuperPeer, e -> {
+                                location -> {
+                                   viewModel.sendLocationToSuperPeer(location);
+                                }, e -> {
                                     Log.e(TAG, e.toString());
                                 });
                     }
@@ -130,43 +137,6 @@ public class MainActivity extends AppCompatActivity{
     }
 
     /**
-     * Fills a buffer with just lat and long double values, and sends
-     * to the super peer assuming it runs on the same mesh port as us.
-     *
-     * @param location location that will be sent over RightMesh to the SuperPeer
-     */
-    private void sendLocationToSuperPeer(Location location) {
-        if (location == null) {
-            Log.d(TAG, "location is null");
-            return;
-        }
-
-        tvNotification.setText("Sending your GPS to App SuperPeer!");
-
-        ByteBuffer buffer = ByteBuffer.allocate(DOUBLE_NUM_BYTES + DOUBLE_NUM_BYTES);
-        buffer.putDouble(location.getLatitude());
-        buffer.putDouble(location.getLongitude());
-        try {
-            // TODO: fill in with your local SuperPeer MeshId
-            MeshId hardcodedSuperPeerId = MeshId.fromString(SUPER_PEER_ID);
-            int dataId = rightMeshConnector.sentDataReliable(hardcodedSuperPeerId,
-                    buffer.array());
-            Logger.log(TAG, "Sent to dataID: " + dataId);
-        } catch (RightMeshException e) {
-            Logger.log(TAG, "Failed to send location: " + location.toString());
-        }
-        Toast.makeText(
-                getApplicationContext(),
-                "Sent lat: "
-                        + location.getLatitude()
-                        + ", long: "
-                        + location.getLongitude()
-                        + " to SuperPeer",
-                LENGTH_SHORT
-        ).show();
-    }
-
-    /**
      * Spins on permissions checks and does not progress to registering
      * a LocationListener unless the user allows.
      * Then registers the listener (we only care about location change here).
@@ -189,7 +159,7 @@ public class MainActivity extends AppCompatActivity{
             public void onLocationResult(LocationResult locationResult) {
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
-                    sendLocationToSuperPeer(location);
+                    viewModel.sendLocationToSuperPeer(location);
                 }
             }
         });
