@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'checkstyle'
     id 'io.left.rightmesh.rightmesh-plugin' version '1.8.4'
 }
 
