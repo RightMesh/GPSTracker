@@ -6,20 +6,22 @@ import static android.widget.Toast.LENGTH_SHORT;
 
 import android.location.Location;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 
-import androidx.lifecycle.ViewModelProviders;
 import io.left.rightmesh.util.Logger;
 
+import rightmesh.left.io.gpstracker.utils.LocationTracker;
 import rightmesh.left.io.gpstracker.utils.PermissionUtil;
 
 /**
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Init viewmodel
+     * Init viewmodel.
      *
      * @param savedInstanceState avedInstanceState – If the activity is being re-initialized after
      *                           previously being shut down then this Bundle contains the data it
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Binding data from viewmodel to UI
+     * Binding data from viewmodel to UI.
      */
     private void observeViewModel() {
         viewModel.liveDataNotificationText.observe(this, s -> {
@@ -106,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                         registerLocationListener();
                         locationUtil.getLastLocation(
                                 location -> {
-                                   viewModel.sendLocationToSuperPeer(location);
+                                    viewModel.sendLocationToSuperPeer(location);
                                 }, e -> {
                                     Log.e(TAG, e.toString());
                                 });

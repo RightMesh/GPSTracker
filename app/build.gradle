@@ -21,6 +21,8 @@ repositories {
     }
 }
 
+apply from: 'checkstyle.gradle'
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -42,8 +44,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
+    lintOptions{
+        abortOnError false
+    }
 }
-
+configurations {
+    all*.exclude group: 'com.google.guava', module: 'listenablefuture'
+}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.multidex:multidex:2.0.1'
