@@ -7,7 +7,7 @@ env:
   - EMULATOR_API=21
   - ANDROID_BUILD_TOOLS=28.0.3
   - ADB_INSTALL_TIMEOUT=20
-  - PROPERTIES=" -Prightmesh_build_username=${rightmesh_build_username} -Prightmesh_build_password=${rightmesh_build_password}"
+  - PROPERTIES=" -Prightmesh_build_username=${rightmesh_build_username} -Prightmesh_build_password=${rightmesh_build_password} -Papp_build_key=${app_build_key}"
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -45,10 +45,10 @@ android:
   - adb shell input keyevent 82 #Unlock phone before using
 jobs:
   include:
-  - stage: checkstyle
-    script: ./gradlew checkstyle $PROPERTIES
   - stage: Build
     script: ./gradlew clean build -PdisablePreDex $PROPERTIES
+  - stage: checkstyle
+    script: ./gradlew checkstyle $PROPERTIES
   - stage: Test
     name: Unit Tests
     script: ./gradlew test $PROPERTIES

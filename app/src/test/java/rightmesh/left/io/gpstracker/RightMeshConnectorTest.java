@@ -45,7 +45,7 @@ public class RightMeshConnectorTest {
     private RightMeshConnector SUT;
 
     /**
-     * Run before test method
+     * Run before test method.
      */
     @Before
     public void setUp() {
