@@ -15,7 +15,6 @@ import androidx.lifecycle.OnLifecycleEvent;
 
 import java.util.ArrayList;
 
-
 /**
  * A helper class to ask for permission.
  *
@@ -29,7 +28,6 @@ public class PermissionUtil implements LifecycleObserver {
     private PermissionCallback callback;
 
     private Activity activity;
-    private Lifecycle lifecycle;
 
     public PermissionUtil(Activity activity) {
         this.activity = activity;
@@ -64,9 +62,8 @@ public class PermissionUtil implements LifecycleObserver {
      * @return {@link PermissionUtil}
      */
     public PermissionUtil addLifeCycleOwner(Lifecycle lifecycle) {
-        this.lifecycle = lifecycle;
-        if (this.lifecycle != null) {
-            this.lifecycle.addObserver(this);
+        if (lifecycle != null) {
+            lifecycle.addObserver(this);
         }
         return this;
     }

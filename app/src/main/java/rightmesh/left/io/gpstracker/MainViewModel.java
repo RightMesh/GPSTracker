@@ -5,6 +5,8 @@ import android.location.Location;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RestrictTo;
+import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.MutableLiveData;
@@ -16,7 +18,14 @@ import io.left.rightmesh.util.RightMeshException;
 
 import java.nio.ByteBuffer;
 
+import rightmesh.left.io.gpstracker.utils.LocationTracker;
+import rightmesh.left.io.gpstracker.utils.PermissionUtil;
+
 public class MainViewModel extends AndroidViewModel {
+    @VisibleForTesting
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public LocationTracker locationUtil;
+
     private static final String TAG = MainViewModel.class.getCanonicalName();
 
     private static final int DOUBLE_NUM_BYTES = Double.SIZE / Byte.SIZE;
@@ -27,6 +36,8 @@ public class MainViewModel extends AndroidViewModel {
     public MutableLiveData<String> liveDataMsgToast = new MutableLiveData<>();
     public MutableLiveData<MeshManager.RightMeshEvent>
             liveDataPeerChangeEvent = new MutableLiveData<>();
+
+    private PermissionUtil permissionUtil;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -40,9 +51,10 @@ public class MainViewModel extends AndroidViewModel {
      * Init {@link RightMeshConnector}.
      */
     private void initRightMeshConnector(Lifecycle lifecycle) {
-        rightMeshConnector = new RightMeshConnector(Constants.MESH_PORT, lifecycle);
+        rightMeshConnector = buildRightMeshConnector(lifecycle);
         rightMeshConnector.setOnConnectSuccessListener(meshId ->
-                liveDataNotificationText.setValue("Connected! Fetching current location...")
+                liveDataNotificationText.setValue(
+                        getApplication().getString(R.string.fetching_location))
         );
         rightMeshConnector.setOnPeerChangedListener(event -> {
             /**
@@ -57,6 +69,17 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     /**
+     * Build RightmeshConnector (to mock easier).
+     *
+     * @param lifecycle Activity/Fragment lifecycle
+     * @return new {@link RightMeshConnector}
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    RightMeshConnector buildRightMeshConnector(Lifecycle lifecycle) {
+        return new RightMeshConnector(Constants.MESH_PORT, lifecycle);
+    }
+
+    /**
      * Fills a buffer with just lat and long double values, and sends
      * to the super peer assuming it runs on the same mesh port as us.
      *
@@ -68,7 +91,8 @@ public class MainViewModel extends AndroidViewModel {
             return;
         }
 
-        liveDataNotificationText.setValue("Sending your GPS to App SuperPeer!");
+        liveDataNotificationText.setValue(getApplication()
+                .getString(R.string.sending_your_gps_to_app_superpeer));
 
         ByteBuffer buffer = ByteBuffer.allocate(DOUBLE_NUM_BYTES + DOUBLE_NUM_BYTES);
         buffer.putDouble(location.getLatitude());

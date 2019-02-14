@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">GPSTracker</string>
+    <string name="sending_your_gps_to_app_superpeer">Sending your GPS to App SuperPeer!</string>
+    <string name="location_is_unavailable">Location is unavailable</string>
+    <string name="fetching_location">Connected! Fetching current location...</string>
+    <string name="connecting_rightmesh_service">Connecting RightMesh Service...</string>
 </resources>

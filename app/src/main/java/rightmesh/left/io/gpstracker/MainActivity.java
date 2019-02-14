@@ -20,7 +20,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 
 import io.left.rightmesh.util.Logger;
-
 import rightmesh.left.io.gpstracker.utils.LocationTracker;
 import rightmesh.left.io.gpstracker.utils.PermissionUtil;
 
@@ -148,9 +147,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLocationAvailability(LocationAvailability locationAvailability) {
                 if (locationAvailability.isLocationAvailable()) {
-                    tvNotification.setText("Sending your GPS to App SuperPeer!");
+                    tvNotification.setText(getString(R.string.sending_your_gps_to_app_superpeer));
                 } else {
-                    tvNotification.setText("Location is unavailable");
+                    tvNotification.setText(getString(R.string.location_is_unavailable));
                     if (!locationUtil.isLocationProviderAvailable(getApplicationContext())) {
                         locationUtil.showDialogEnableGPS();
                     }

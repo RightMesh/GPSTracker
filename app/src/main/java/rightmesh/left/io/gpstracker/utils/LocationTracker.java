@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 
+import androidx.annotation.RestrictTo;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
@@ -20,9 +22,11 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 /**
  * Using FusedLocationProviderClient to get location updates.
@@ -48,11 +52,34 @@ public class LocationTracker implements LifecycleObserver {
      */
     public LocationTracker(Activity activity, Lifecycle lifecycle) {
         this.activity = activity;
+        lifecycle.addObserver(this);
         this.fusedLocationProviderClient = LocationServices
                 .getFusedLocationProviderClient(activity);
-        lifecycle.addObserver(this);
     }
 
+    /**
+     * Constructor to avoid dependency (only using for testing purpose).
+     *
+     * @param activity  mock activity
+     * @param lifecycle mock Lifecycle
+     * @param fusedLocationProviderClient mock FusedLocationProviderClient
+     */
+    @VisibleForTesting
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public LocationTracker(Activity activity,
+                           Lifecycle lifecycle,
+                           FusedLocationProviderClient fusedLocationProviderClient) {
+        this.activity = activity;
+        lifecycle.addObserver(this);
+        this.fusedLocationProviderClient = fusedLocationProviderClient;
+    }
+
+    /**
+     * Location provider setter.
+     *
+     * @param fusedLocationProviderClient mock object
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     public void setFusedLocationProviderClient(FusedLocationProviderClient
                                                        fusedLocationProviderClient) {
         this.fusedLocationProviderClient = fusedLocationProviderClient;
@@ -109,8 +136,6 @@ public class LocationTracker implements LifecycleObserver {
                 .setInterval(interval)
                 .setFastestInterval(fastestInterval)
                 .setPriority(priority);
-
-        checkLocationSettings();
 
         fusedLocationProviderClient.requestLocationUpdates(locationRequest,
                 locationCallback,
@@ -182,19 +207,5 @@ public class LocationTracker implements LifecycleObserver {
         });
         builder.setNegativeButton("NO", null);
         builder.create().show();
-    }
-
-    /**
-     * Check whether location settings are satisfied
-     * https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
-     */
-    private void checkLocationSettings() {
-        // Create LocationSettingsRequest object using location request
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-        builder.addLocationRequest(locationRequest);
-        LocationSettingsRequest locationSettingsRequest = builder.build();
-
-        SettingsClient settingsClient = LocationServices.getSettingsClient(activity);
-        settingsClient.checkLocationSettings(locationSettingsRequest);
     }
 }
