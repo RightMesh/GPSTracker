@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,8 +32,6 @@ public class RightMeshConnectorTest {
     @Mock
     private AndroidMeshManager androidMeshManager;
     @Mock
-    private Lifecycle lifecycle;
-    @Mock
     private RightMeshConnector.OnDataReceiveListener onDataReceiveListener;
     @Mock
     private RightMeshConnector.OnPeerChangedListener onPeerChangedListener;
@@ -46,17 +43,17 @@ public class RightMeshConnectorTest {
     private RightMeshConnector spyRightMeshConnector;
 
     /**
-     * Init spy of SUT before running test.
+     * Init spy of underTest before running test.
      */
     @Before
     public void setUp() {
-        RightMeshConnector SUT = new RightMeshConnector(MESH_PORT, lifecycle);
-        SUT.setAndroidMeshManager(androidMeshManager);
-        SUT.setOnConnectSuccessListener(onConnectSuccessListener);
-        SUT.setOnDataReceiveListener(onDataReceiveListener);
-        SUT.setOnPeerChangedListener(onPeerChangedListener);
+        RightMeshConnector underTest = new RightMeshConnector(MESH_PORT);
+        underTest.setAndroidMeshManager(androidMeshManager);
+        underTest.setOnConnectSuccessListener(onConnectSuccessListener);
+        underTest.setOnDataReceiveListener(onDataReceiveListener);
+        underTest.setOnPeerChangedListener(onPeerChangedListener);
 
-        spyRightMeshConnector = Mockito.spy(SUT);
+        spyRightMeshConnector = Mockito.spy(underTest);
     }
 
     @Test
@@ -89,9 +86,9 @@ public class RightMeshConnectorTest {
     public void sentDataReliable_isCalled() throws RightMeshException {
         String payload = "abc";
 
-        spyRightMeshConnector.sentDataReliable(meshId, payload.getBytes());
+        spyRightMeshConnector.sendDataReliable(meshId, payload.getBytes());
 
         verify(androidMeshManager).sendDataReliable(any(), anyInt(), eq(payload.getBytes()));
-        verify(spyRightMeshConnector).sentDataReliable(any(), eq(payload.getBytes()));
+        verify(spyRightMeshConnector).sendDataReliable(any(), eq(payload.getBytes()));
     }
 }

@@ -56,18 +56,18 @@ public class MainViewModelTest {
      */
     @Before
     public void setUp() {
-        MainViewModel SUT = new MainViewModel(application);
-        SUT.setRightMeshConnector(rightMeshConnector);
+        MainViewModel underTest = new MainViewModel(application);
+        underTest.setRightMeshConnector(rightMeshConnector);
 
-        spyMainViewModel = spy(SUT);
+        spyMainViewModel = spy(underTest);
     }
 
     @Test
     public void init_isCall() {
-        doReturn(rightMeshConnector).when(spyMainViewModel).buildRightMeshConnector(any());
+        doReturn(rightMeshConnector).when(spyMainViewModel).buildRightMeshConnector();
         when(application.getString(R.string.fetching_location)).thenReturn("fetching location");
 
-        spyMainViewModel.init(any());
+        spyMainViewModel.init();
 
         MeshId meshId = Mockito.mock(MeshId.class);
         MeshManager.RightMeshEvent rmEvent =
@@ -95,6 +95,6 @@ public class MainViewModelTest {
 
         Assert.assertSame(spyMainViewModel.liveDataNotificationText.getValue(),
                 application.getString(R.string.sending_your_gps_to_app_superpeer));
-        verify(rightMeshConnector).sentDataReliable(any(), any());
+        verify(rightMeshConnector).sendDataReliable(any(), any());
     }
 }

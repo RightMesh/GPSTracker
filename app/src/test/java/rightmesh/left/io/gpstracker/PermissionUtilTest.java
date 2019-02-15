@@ -32,11 +32,11 @@ public class PermissionUtilTest {
      */
     @Before
     public void setUp() {
-        PermissionUtil SUT = new PermissionUtil(activity);
+        PermissionUtil underTest = new PermissionUtil(activity);
 
-        SUT.callback(permissionCallback);
+        underTest.callback(permissionCallback);
 
-        spyPermissionUtil = Mockito.spy(SUT);
+        spyPermissionUtil = Mockito.spy(underTest);
     }
 
     @Test

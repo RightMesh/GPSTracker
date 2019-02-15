@@ -28,17 +28,17 @@ public class LocationTrackerTest {
     private LocationTracker spyLocationTracker;
 
     /**
-     * Set SUT before each test case.
+     * Set underTest before each test case.
      */
     @Before
     public void setUp() {
-        LocationTracker SUT = new LocationTracker(mock(Activity.class),
+        LocationTracker underTest = new LocationTracker(mock(Activity.class),
                 mock(Lifecycle.class),
                 fusedLocationProviderClient);
 
-        SUT.setFusedLocationProviderClient(fusedLocationProviderClient);
+        underTest.setFusedLocationProviderClient(fusedLocationProviderClient);
 
-        spyLocationTracker = Mockito.spy(SUT);
+        spyLocationTracker = Mockito.spy(underTest);
     }
 
     @Test

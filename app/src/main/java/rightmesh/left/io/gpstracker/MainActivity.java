@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private void initViewModel(Bundle savedInstanceState) {
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         if (savedInstanceState == null) {
-            viewModel.init(getLifecycle());
+            viewModel.init();
         }
     }
 
@@ -151,13 +151,14 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     tvNotification.setText(getString(R.string.location_is_unavailable));
                     if (!locationUtil.isLocationProviderAvailable(getApplicationContext())) {
-                        locationUtil.showDialogEnableGPS();
+                        locationUtil.showDialogEnableGps();
                     }
                 }
             }
 
             @Override
             public void onLocationResult(LocationResult locationResult) {
+                Log.d(TAG, "Get Location");
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
                     viewModel.sendLocationToSuperPeer(location);

@@ -43,15 +43,15 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
     }
 
-    public void init(Lifecycle lifecycle) {
-        initRightMeshConnector(lifecycle);
+    public void init() {
+        initRightMeshConnector();
     }
 
     /**
      * Init {@link RightMeshConnector}.
      */
-    private void initRightMeshConnector(Lifecycle lifecycle) {
-        rightMeshConnector = buildRightMeshConnector(lifecycle);
+    private void initRightMeshConnector() {
+        rightMeshConnector = buildRightMeshConnector();
         rightMeshConnector.setOnConnectSuccessListener(meshId ->
                 liveDataNotificationText.setValue(
                         getApplication().getString(R.string.fetching_location))
@@ -71,12 +71,11 @@ public class MainViewModel extends AndroidViewModel {
     /**
      * Build RightmeshConnector (to mock easier).
      *
-     * @param lifecycle Activity/Fragment lifecycle
      * @return new {@link RightMeshConnector}
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    RightMeshConnector buildRightMeshConnector(Lifecycle lifecycle) {
-        return new RightMeshConnector(Constants.MESH_PORT, lifecycle);
+    RightMeshConnector buildRightMeshConnector() {
+        return new RightMeshConnector(Constants.MESH_PORT);
     }
 
     /**
@@ -100,7 +99,7 @@ public class MainViewModel extends AndroidViewModel {
         try {
             // TODO: fill in with your local SuperPeer MeshId
             MeshId hardcodedSuperPeerId = MeshId.fromString(Constants.SUPER_PEER_ID);
-            int dataId = rightMeshConnector.sentDataReliable(hardcodedSuperPeerId,
+            int dataId = rightMeshConnector.sendDataReliable(hardcodedSuperPeerId,
                     buffer.array());
             Logger.log(TAG, "Sent to dataID: " + dataId);
         } catch (RightMeshException e) {
@@ -120,5 +119,11 @@ public class MainViewModel extends AndroidViewModel {
      */
     public void setRightMeshConnector(RightMeshConnector rightMeshConnector) {
         this.rightMeshConnector = rightMeshConnector;
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        rightMeshConnector.stop();
     }
 }

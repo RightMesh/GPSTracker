@@ -28,6 +28,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Using FusedLocationProviderClient to get location updates.
  */
@@ -60,8 +62,8 @@ public class LocationTracker implements LifecycleObserver {
     /**
      * Constructor to avoid dependency (only using for testing purpose).
      *
-     * @param activity  mock activity
-     * @param lifecycle mock Lifecycle
+     * @param activity                    mock activity
+     * @param lifecycle                   mock Lifecycle
      * @param fusedLocationProviderClient mock FusedLocationProviderClient
      */
     @VisibleForTesting
@@ -169,8 +171,7 @@ public class LocationTracker implements LifecycleObserver {
     }
 
     /**
-     * Automatically trigger in {@link Activity#onDestroy()} or
-     * {@link Fragment#onDestroy()}.
+     * Automatically trigger in {@link Activity#onDestroy()} or {@link Fragment#onDestroy()}.
      */
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void destroy() {
@@ -182,12 +183,12 @@ public class LocationTracker implements LifecycleObserver {
     /**
      * Check if location provider is available.
      *
-     * @param mContext Application context
+     * @param context Application context
      * @return True:= available, False:= unavailable
      */
-    public boolean isLocationProviderAvailable(Context mContext) {
+    public boolean isLocationProviderAvailable(Context context) {
         LocationManager lm = (LocationManager)
-                mContext.getSystemService(Context.LOCATION_SERVICE);
+                context.getSystemService(Context.LOCATION_SERVICE);
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
@@ -195,7 +196,7 @@ public class LocationTracker implements LifecycleObserver {
     /**
      * Show Dialog to ask for turn GPS.
      */
-    public void showDialogEnableGPS() {
+    public void showDialogEnableGps() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("GPS is not found");  // GPS not found
         builder.setMessage("Turn on GPS?"); // Want to enable?

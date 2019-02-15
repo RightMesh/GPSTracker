@@ -6,10 +6,6 @@ import static io.left.rightmesh.mesh.MeshManager.PEER_CHANGED;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
-
 import io.left.rightmesh.android.AndroidMeshManager;
 import io.left.rightmesh.id.MeshId;
 import io.left.rightmesh.mesh.MeshManager;
@@ -18,9 +14,15 @@ import io.left.rightmesh.util.Logger;
 import io.left.rightmesh.util.RightMeshException;
 
 /**
- * To communicate with Rightmesh service.
+ * To communicate with the RightMesh service and redirect to RightMesh wallet activity.
+ *
+ * After connecting, we can register {@link OnDataReceiveListener}, {@link OnPeerChangedListener},
+ * {@link OnConnectSuccessListener} to receive the RightMesh event.
+ *
+ * Always call {@link RightMeshConnector#stop()} if not interest in keeping connection with
+ * RightMesh service anymore.
  */
-public class RightMeshConnector implements MeshStateListener, LifecycleObserver {
+public class RightMeshConnector implements MeshStateListener {
     private static final String TAG = RightMeshConnector.class.getCanonicalName();
 
     /**
@@ -60,17 +62,15 @@ public class RightMeshConnector implements MeshStateListener, LifecycleObserver 
      * Constructor {@link RightMeshConnector}.
      *
      * @param meshPort Rightmesh Port
-     * @param lifecycle to observe life-cycle
      */
-    public RightMeshConnector(int meshPort, Lifecycle lifecycle) {
+    public RightMeshConnector(int meshPort) {
         this.meshPort = meshPort;
-        lifecycle.addObserver(this);
     }
 
     /**
      * Connect to Rightmesh.
      *
-     * @param context Should pass application context
+     * @param context      Should pass application context
      * @param superPeerUrl Superpeer URL
      */
     public void connect(Context context, String superPeerUrl) {
@@ -161,16 +161,15 @@ public class RightMeshConnector implements MeshStateListener, LifecycleObserver 
      * @throws RightMeshException.RightMeshServiceDisconnectedException Service disconnected.
      * @throws RightMeshException                                       Can't find next hop.
      */
-    public int sentDataReliable(MeshId targetMeshId, byte[] payload) throws RightMeshException,
+    public int sendDataReliable(MeshId targetMeshId, byte[] payload) throws RightMeshException,
             RightMeshException.RightMeshServiceDisconnectedException {
         return androidMeshManager.sendDataReliable(androidMeshManager.getNextHopPeer(targetMeshId),
                 meshPort, payload);
     }
 
     /**
-     * Close RightMesh connection when activity is destroyed.
+     * Close RightMesh connection.
      */
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void stop() {
         try {
             androidMeshManager.stop();
@@ -181,20 +180,8 @@ public class RightMeshConnector implements MeshStateListener, LifecycleObserver 
     }
 
     /**
-     * Resume RightMesh connection on activity resume.
-     */
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    public void resumse() {
-        try {
-            androidMeshManager.resume();
-        } catch (RightMeshException.RightMeshServiceDisconnectedException e) {
-            Logger.fatal(TAG, "Service disconnected before resuming AndroidMeshManager "
-                    + "with message" + e.getMessage());
-        }
-    }
-
-    /**
      * {@link AndroidMeshManager} setter used to testing purpose.
+     *
      * @param androidMeshManager - should pass Mock object.
      */
     public void setAndroidMeshManager(AndroidMeshManager androidMeshManager) {
