@@ -22,10 +22,6 @@ import rightmesh.left.io.gpstracker.utils.LocationTracker;
 import rightmesh.left.io.gpstracker.utils.PermissionUtil;
 
 public class MainViewModel extends AndroidViewModel {
-    @VisibleForTesting
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    public LocationTracker locationUtil;
-
     private static final String TAG = MainViewModel.class.getCanonicalName();
 
     private static final int DOUBLE_NUM_BYTES = Double.SIZE / Byte.SIZE;
@@ -36,8 +32,6 @@ public class MainViewModel extends AndroidViewModel {
     public MutableLiveData<String> liveDataMsgToast = new MutableLiveData<>();
     public MutableLiveData<MeshManager.RightMeshEvent>
             liveDataPeerChangeEvent = new MutableLiveData<>();
-
-    private PermissionUtil permissionUtil;
 
     public MainViewModel(@NonNull Application application) {
         super(application);

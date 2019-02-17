@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Init viewmodel.
      *
-     * @param savedInstanceState avedInstanceState – If the activity is being re-initialized after
+     * @param savedInstanceState savedInstanceState – If the activity is being re-initialized after
      *                           previously being shut down then this Bundle contains the data it
      *                           most recently supplied in
      */
