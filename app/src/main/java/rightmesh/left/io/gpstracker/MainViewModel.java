@@ -5,10 +5,8 @@ import android.location.Location;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.MutableLiveData;
 
 import io.left.rightmesh.id.MeshId;
@@ -18,13 +16,7 @@ import io.left.rightmesh.util.RightMeshException;
 
 import java.nio.ByteBuffer;
 
-import rightmesh.left.io.gpstracker.utils.LocationTracker;
-import rightmesh.left.io.gpstracker.utils.PermissionUtil;
-
 public class MainViewModel extends AndroidViewModel {
-    @VisibleForTesting
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    public LocationTracker locationUtil;
 
     private static final String TAG = MainViewModel.class.getCanonicalName();
 
@@ -36,8 +28,6 @@ public class MainViewModel extends AndroidViewModel {
     public MutableLiveData<String> liveDataMsgToast = new MutableLiveData<>();
     public MutableLiveData<MeshManager.RightMeshEvent>
             liveDataPeerChangeEvent = new MutableLiveData<>();
-
-    private PermissionUtil permissionUtil;
 
     public MainViewModel(@NonNull Application application) {
         super(application);

@@ -79,13 +79,13 @@ public class MainActivity extends AppCompatActivity {
      * Binding data from viewmodel to UI.
      */
     private void observeViewModel() {
-        viewModel.liveDataNotificationText.observe(this, s -> {
-            tvNotification.setText(s);
+        viewModel.liveDataNotificationText.observe(this, notificationText -> {
+            tvNotification.setText(notificationText);
         });
-        viewModel.liveDataMsgToast.observe(this, s -> {
+        viewModel.liveDataMsgToast.observe(this, msg -> {
             Toast.makeText(
                     getApplicationContext(),
-                    s,
+                    msg,
                     LENGTH_SHORT
             ).show();
         });
