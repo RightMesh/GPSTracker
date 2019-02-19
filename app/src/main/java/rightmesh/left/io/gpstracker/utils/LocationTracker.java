@@ -1,30 +1,34 @@
-package rightmesh.left.io.gpstracker;
+package rightmesh.left.io.gpstracker.utils;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleObserver;
-import android.arch.lifecycle.OnLifecycleEvent;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.RestrictTo;
+import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Using FusedLocationProviderClient to get location updates.
@@ -50,9 +54,37 @@ public class LocationTracker implements LifecycleObserver {
      */
     public LocationTracker(Activity activity, Lifecycle lifecycle) {
         this.activity = activity;
+        lifecycle.addObserver(this);
         this.fusedLocationProviderClient = LocationServices
                 .getFusedLocationProviderClient(activity);
+    }
+
+    /**
+     * Constructor to avoid dependency (only using for testing purpose).
+     *
+     * @param activity                    mock activity
+     * @param lifecycle                   mock Lifecycle
+     * @param fusedLocationProviderClient mock FusedLocationProviderClient
+     */
+    @VisibleForTesting
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public LocationTracker(Activity activity,
+                           Lifecycle lifecycle,
+                           FusedLocationProviderClient fusedLocationProviderClient) {
+        this.activity = activity;
         lifecycle.addObserver(this);
+        this.fusedLocationProviderClient = fusedLocationProviderClient;
+    }
+
+    /**
+     * Location provider setter.
+     *
+     * @param fusedLocationProviderClient mock object
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public void setFusedLocationProviderClient(FusedLocationProviderClient
+                                                       fusedLocationProviderClient) {
+        this.fusedLocationProviderClient = fusedLocationProviderClient;
     }
 
     /**
@@ -107,12 +139,9 @@ public class LocationTracker implements LifecycleObserver {
                 .setFastestInterval(fastestInterval)
                 .setPriority(priority);
 
-        checkLocationSettings();
-
         fusedLocationProviderClient.requestLocationUpdates(locationRequest,
                 locationCallback,
                 null);
-
     }
 
     /**
@@ -142,8 +171,7 @@ public class LocationTracker implements LifecycleObserver {
     }
 
     /**
-     * Automatically trigger in {@link Activity#onDestroy()} or
-     * {@link android.support.v4.app.Fragment#onDestroy()}.
+     * Automatically trigger in {@link Activity#onDestroy()} or {@link Fragment#onDestroy()}.
      */
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void destroy() {
@@ -155,12 +183,12 @@ public class LocationTracker implements LifecycleObserver {
     /**
      * Check if location provider is available.
      *
-     * @param mContext Application context
+     * @param context Application context
      * @return True:= available, False:= unavailable
      */
-    public boolean isLocationProviderAvailable(Context mContext) {
+    public boolean isLocationProviderAvailable(Context context) {
         LocationManager lm = (LocationManager)
-                mContext.getSystemService(Context.LOCATION_SERVICE);
+                context.getSystemService(Context.LOCATION_SERVICE);
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
@@ -168,7 +196,7 @@ public class LocationTracker implements LifecycleObserver {
     /**
      * Show Dialog to ask for turn GPS.
      */
-    public void showDialogEnableGPS() {
+    public void showDialogEnableGps() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("GPS is not found");  // GPS not found
         builder.setMessage("Turn on GPS?"); // Want to enable?
@@ -180,19 +208,5 @@ public class LocationTracker implements LifecycleObserver {
         });
         builder.setNegativeButton("NO", null);
         builder.create().show();
-    }
-
-    /**
-     * Check whether location settings are satisfied
-     * https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
-     */
-    private void checkLocationSettings() {
-        // Create LocationSettingsRequest object using location request
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-        builder.addLocationRequest(locationRequest);
-        LocationSettingsRequest locationSettingsRequest = builder.build();
-
-        SettingsClient settingsClient = LocationServices.getSettingsClient(activity);
-        settingsClient.checkLocationSettings(locationSettingsRequest);
     }
 }

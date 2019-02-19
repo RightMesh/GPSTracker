@@ -3,13 +3,15 @@ package rightmesh.left.io.gpstracker.utils;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.app.Activity;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleObserver;
-import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import java.util.ArrayList;
 
@@ -26,7 +28,6 @@ public class PermissionUtil implements LifecycleObserver {
     private PermissionCallback callback;
 
     private Activity activity;
-    private Lifecycle lifecycle;
 
     public PermissionUtil(Activity activity) {
         this.activity = activity;
@@ -61,9 +62,8 @@ public class PermissionUtil implements LifecycleObserver {
      * @return {@link PermissionUtil}
      */
     public PermissionUtil addLifeCycleOwner(Lifecycle lifecycle) {
-        this.lifecycle = lifecycle;
-        if (this.lifecycle != null) {
-            this.lifecycle.addObserver(this);
+        if (lifecycle != null) {
+            lifecycle.addObserver(this);
         }
         return this;
     }
@@ -98,7 +98,7 @@ public class PermissionUtil implements LifecycleObserver {
 
     /**
      * Always put this method in {@link Activity#onRequestPermissionsResult(int, String[], int[])}
-     * or {@link android.support.v4.app.Fragment#onRequestPermissionsResult(int, String[], int[])}
+     * or {@link Fragment#onRequestPermissionsResult(int, String[], int[])}
      * to handle result of permission requesting.<br>
      * Pass the same provided params in onRequestPermissionsResult() to this method
      *
