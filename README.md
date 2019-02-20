@@ -1,4 +1,4 @@
-# GPS Tracker
+# GPS Tracker [![Build Status](https://travis-ci.com/RightMesh/GPSTracker.svg?branch=master)](https://travis-ci.com/RightMesh/GPSTracker)
 
 ## What is this?
 
