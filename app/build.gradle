@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.application'
-    id 'checkstyle'
     id 'io.left.rightmesh.rightmesh-plugin' version '1.8.4'
 }
 
@@ -23,6 +22,8 @@ repositories {
 }
 
 apply from: 'checkstyle.gradle'
+apply from: 'findbugs.gradle'
+apply from: 'pmd.gradle'
 
 android {
     compileSdkVersion 28
@@ -75,6 +76,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
     implementation 'io.left.rightmesh:lib-rightmesh-android:0.10.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
+
+    compileOnly 'com.google.code.findbugs:annotations:3.0.1'
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:2.23.0'

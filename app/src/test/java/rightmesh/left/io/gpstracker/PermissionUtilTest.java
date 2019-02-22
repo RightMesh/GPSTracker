@@ -1,5 +1,7 @@
 package rightmesh.left.io.gpstracker;
 
+import static org.mockito.ArgumentMatchers.any;
+
 import android.app.Activity;
 import android.content.pm.PackageManager;
 
@@ -48,13 +50,10 @@ public class PermissionUtilTest {
 
         //Check if method is called
         Mockito.verify(spyPermissionUtil).handleResult(Mockito.anyInt(),
-                Mockito.eq(permissions), Mockito.eq(grantResults));
+                Mockito.eq(permissions), any());
 
         Mockito.verify(permissionCallback).onAllGranted();
-        Mockito.verify(permissionCallback, Mockito.never()).onDenied(Mockito.any());
-        Mockito.verify(spyPermissionUtil).handleResult(Mockito.anyInt(),
-                Mockito.eq(permissions),
-                Mockito.eq(grantResults));
+        Mockito.verify(permissionCallback, Mockito.never()).onDenied(any());
     }
 
     @Test
@@ -66,12 +65,9 @@ public class PermissionUtilTest {
 
         //Check if method is called
         Mockito.verify(spyPermissionUtil).handleResult(Mockito.anyInt(),
-                Mockito.eq(permissions), Mockito.eq(grantResults));
+                Mockito.eq(permissions), any());
 
         Mockito.verify(permissionCallback, Mockito.never()).onAllGranted();
-        Mockito.verify(permissionCallback).onDenied(Mockito.any());
-        Mockito.verify(spyPermissionUtil).handleResult(Mockito.anyInt(),
-                Mockito.eq(permissions),
-                Mockito.eq(grantResults));
+        Mockito.verify(permissionCallback).onDenied(any());
     }
 }

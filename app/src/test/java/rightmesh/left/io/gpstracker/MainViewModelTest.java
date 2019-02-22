@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.CheckReturnValue;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -93,7 +94,7 @@ public class MainViewModelTest {
 
         spyMainViewModel.sendLocationToSuperPeer(Mockito.mock(Location.class));
 
-        Assert.assertSame(spyMainViewModel.liveDataNotificationText.getValue(),
+        Assert.assertEquals(spyMainViewModel.liveDataNotificationText.getValue(),
                 application.getString(R.string.sending_your_gps_to_app_superpeer));
         verify(rightMeshConnector).sendDataReliable(any(), any());
     }

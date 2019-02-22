@@ -16,6 +16,8 @@ import io.left.rightmesh.util.RightMeshException;
 
 import java.nio.ByteBuffer;
 
+import javax.annotation.CheckReturnValue;
+
 public class MainViewModel extends AndroidViewModel {
 
     private static final String TAG = MainViewModel.class.getCanonicalName();
@@ -64,6 +66,7 @@ public class MainViewModel extends AndroidViewModel {
      * @return new {@link RightMeshConnector}
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @CheckReturnValue
     RightMeshConnector buildRightMeshConnector() {
         return new RightMeshConnector(Constants.MESH_PORT);
     }
