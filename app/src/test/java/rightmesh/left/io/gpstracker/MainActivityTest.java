@@ -24,6 +24,7 @@ public class MainActivityTest extends AndroidTest<MainActivity> {
         activity = Robolectric.setupActivity(MainActivity.class);
         tvNotification = findViewById(R.id.tv_notification);
 
+        activity.getResources();
         assertNotNull(activity);
         assertEquals(tvNotification.getText(), getString(R.string.connecting_rightmesh_service));
     }

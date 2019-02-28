@@ -57,7 +57,7 @@ public class MainViewModel extends AndroidViewModel {
              */
             liveDataPeerChangeEvent.postValue(event); //postValue to UI thread
         });
-        rightMeshConnector.connect(getApplication(), Constants.SUPER_PEER_URL);
+        rightMeshConnector.connect(getApplication(), BuildConfig.SUPER_PEER_URL);
     }
 
     /**
@@ -68,7 +68,7 @@ public class MainViewModel extends AndroidViewModel {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     @CheckReturnValue
     RightMeshConnector buildRightMeshConnector() {
-        return new RightMeshConnector(Constants.MESH_PORT);
+        return new RightMeshConnector(BuildConfig.MESH_PORT);
     }
 
     /**
@@ -91,7 +91,7 @@ public class MainViewModel extends AndroidViewModel {
         buffer.putDouble(location.getLongitude());
         try {
             // TODO: fill in with your local SuperPeer MeshId
-            MeshId hardcodedSuperPeerId = MeshId.fromString(Constants.SUPER_PEER_ID);
+            MeshId hardcodedSuperPeerId = MeshId.fromString(BuildConfig.SUPER_PEER_ID);
             int dataId = rightMeshConnector.sendDataReliable(hardcodedSuperPeerId,
                     buffer.array());
             Logger.log(TAG, "Sent to dataID: " + dataId);

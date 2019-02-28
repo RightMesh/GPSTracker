@@ -84,7 +84,7 @@ public class MainViewModelTest {
         Assert.assertEquals(spyMainViewModel.liveDataNotificationText.getValue(),
                 application.getString(R.string.fetching_location));
         Assert.assertEquals(spyMainViewModel.liveDataPeerChangeEvent.getValue(), rmEvent);
-        verify(rightMeshConnector).connect(any(), eq(Constants.SUPER_PEER_URL));
+        verify(rightMeshConnector).connect(any(), eq(BuildConfig.SUPER_PEER_URL));
     }
 
     @Test
