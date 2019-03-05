@@ -2,7 +2,6 @@ package rightmesh.left.io.gpstracker.utils;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.location.LocationManager;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
@@ -21,27 +19,19 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Using FusedLocationProviderClient to get location updates.
  */
 public class LocationTracker implements LifecycleObserver {
     private FusedLocationProviderClient fusedLocationProviderClient;
-    private Activity activity;
+    Activity activity;
 
     private int interval = 1000;
     private int fastestInterval = 500;
     private int priority = LocationRequest.PRIORITY_HIGH_ACCURACY;
-
-    private LocationRequest locationRequest;
 
     private LocationCallback locationCallback;
 
@@ -134,7 +124,7 @@ public class LocationTracker implements LifecycleObserver {
     @SuppressLint("MissingPermission")
     public void requestLocationUpdate(LocationCallback locationCallback) {
         this.locationCallback = locationCallback;
-        this.locationRequest = new LocationRequest()
+        LocationRequest locationRequest = new LocationRequest()
                 .setInterval(interval)
                 .setFastestInterval(fastestInterval)
                 .setPriority(priority);

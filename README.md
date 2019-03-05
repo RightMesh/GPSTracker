@@ -10,7 +10,7 @@ Users simply accept the Location Service permission prompts and move to several 
 
 GPS Tracker is built in Android Studio, and should be able to be opened once this repo has been cloned. Note that you will have to sign up for a RightMesh developer account in order to download our library and license verification Gradle plugin - please check out [https://rightmesh.io/developers](https://rightmesh.io/developers) for more information.
 
-If you want to change GPSTracker configuration (RightMesh port, SuperPeer information), you might need to revise `Constants.java`
+If you want to change GPSTracker configuration (RightMesh port, SuperPeer information), you might need to revise the value of `buildConfigField` in `build.gradle`
 
 ## What is RightMesh?
 

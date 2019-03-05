@@ -3,12 +3,10 @@ package rightmesh.left.io.gpstracker.utils;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.app.Activity;
-import android.content.pm.PackageManager;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
@@ -75,9 +73,12 @@ public class PermissionUtil implements LifecycleObserver {
      * false: one of permissions is denied.
      */
     private boolean isPermissionAllGranted() {
-        for (String permission : permissions) {
-            if (ActivityCompat.checkSelfPermission(activity, permission) != PERMISSION_GRANTED) {
-                return false;
+        if (permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat
+                        .checkSelfPermission(activity, permission) != PERMISSION_GRANTED) {
+                    return false;
+                }
             }
         }
         return true;
@@ -97,9 +98,8 @@ public class PermissionUtil implements LifecycleObserver {
     }
 
     /**
-     * Always put this method in {@link Activity#onRequestPermissionsResult(int, String[], int[])}
-     * or {@link Fragment#onRequestPermissionsResult(int, String[], int[])}
-     * to handle result of permission requesting.<br>
+     * Always put this method in onRequestPermissionsResult
+     * to handle result of permission requesting.
      * Pass the same provided params in onRequestPermissionsResult() to this method
      *
      * @param requestCode  The request code passed in.
@@ -108,13 +108,13 @@ public class PermissionUtil implements LifecycleObserver {
      */
     public void handleResult(int requestCode,
                              @NonNull String[] permissions,
-                             @NonNull int[] grantResults) {
+                             @NonNull int... grantResults) {
         if (requestCode == PERMISSION_REQUEST_CODE) {
             ArrayList<String> grantedPermissions = new ArrayList<>();
             ArrayList<String> deniedPermission = new ArrayList<>();
 
             for (int i = 0; i < permissions.length; i++) {
-                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults[i] == PERMISSION_GRANTED) {
                     grantedPermissions.add(permissions[i]);
                 } else {
                     deniedPermission.add(permissions[i]);
@@ -124,7 +124,8 @@ public class PermissionUtil implements LifecycleObserver {
                 if (grantedPermissions.size() == permissions.length) {
                     callback.onAllGranted();
                 } else {
-                    callback.onDenied(deniedPermission.toArray(new String[0]));
+                    callback.onDenied(deniedPermission.toArray(
+                            new String[deniedPermission.size()]));
                 }
             }
         }
@@ -146,6 +147,6 @@ public class PermissionUtil implements LifecycleObserver {
     public interface PermissionCallback {
         void onAllGranted();
 
-        void onDenied(@NonNull String[] deniedPermissions);
+        void onDenied(@NonNull String... deniedPermissions);
     }
 }

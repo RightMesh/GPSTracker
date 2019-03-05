@@ -25,6 +25,18 @@ import io.left.rightmesh.util.RightMeshException;
 public class RightMeshConnector implements MeshStateListener {
     private static final String TAG = RightMeshConnector.class.getCanonicalName();
 
+    private final int meshPort;
+
+    // Interface object for the RightMesh library.
+    private AndroidMeshManager androidMeshManager;
+
+    //listener for data receive event
+    private OnDataReceiveListener dataReceiveListener;
+    //listener for peer change event
+    private OnPeerChangedListener peerchangedListener;
+    //listener for my MeshId receiving event
+    private OnConnectSuccessListener connectSuccessListener;
+
     /**
      * Data Receive Listener.
      */
@@ -45,18 +57,6 @@ public class RightMeshConnector implements MeshStateListener {
     public interface OnConnectSuccessListener {
         void onConnectSucess(MeshId meshId);
     }
-
-    private int meshPort;
-
-    // Interface object for the RightMesh library.
-    private AndroidMeshManager androidMeshManager;
-
-    //listener for data receive event
-    private OnDataReceiveListener dataReceiveListener;
-    //listener for peer change event
-    private OnPeerChangedListener peerchangedListener;
-    //listener for my MeshId receiving event
-    private OnConnectSuccessListener connectSuccessListener;
 
     /**
      * Constructor {@link RightMeshConnector}.

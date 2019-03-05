@@ -1,0 +1,31 @@
+<FindBugsFilter>
+
+    <!-- Do not check auto-generated resources classes -->
+    <Match>
+        <Class name="~.*R\$.*"/>
+    </Match>
+
+    <!-- Do not check auto-generated manifest classes -->
+    <Match>
+        <Class name="~.*Manifest\$.*"/>
+    </Match>
+
+    <!-- Do not check auto-generated classes (Dagger puts $ into class names) -->
+    <!--<Match>-->
+        <!--<Class name="~.*Dagger*.*"/>-->
+    <!--</Match>-->
+
+    <!-- Do not check for non-initialized fields in tests because usually we initialize them in @Before -->
+    <Match>
+        <Class name="~.*Test"/>
+        <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"
+            type="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    </Match>
+
+    <!--`Rule` is need for checking viewmodel-->
+    <Match>
+        <Class name="rightmesh.left.io.gpstracker.MainViewModelTest" />
+        <Field name="rule" />
+        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" />
+    </Match>
+</FindBugsFilter>

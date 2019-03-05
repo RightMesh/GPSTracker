@@ -27,14 +27,15 @@ import rightmesh.left.io.gpstracker.utils.PermissionUtil;
  * An activity that listens to GPS updates and reports them back to the RightMesh SuperPeer.
  */
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = MainActivity.class.getCanonicalName();
+    static final String TAG = MainActivity.class.getCanonicalName();
 
-    private TextView tvNotification;
+    TextView tvNotification;
 
-    private LocationTracker locationUtil;
+    LocationTracker locationUtil;
+
     private PermissionUtil permissionUtil;
 
-    private MainViewModel viewModel;
+    MainViewModel viewModel;
 
     /**
      * Initializes references to androidMeshManager and sets up the GPS location listeners.
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
      * a LocationListener unless the user allows.
      * Then registers the listener (we only care about location change here).
      */
-    private void registerLocationListener() {
+    void registerLocationListener() {
         locationUtil.requestLocationUpdate(new LocationCallback() {
             @Override
             public void onLocationAvailability(LocationAvailability locationAvailability) {

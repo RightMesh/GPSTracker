@@ -6,12 +6,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
-import androidx.lifecycle.Lifecycle;
 
 import io.left.rightmesh.android.AndroidMeshManager;
 import io.left.rightmesh.id.MeshId;
 import io.left.rightmesh.mesh.MeshStateListener;
 import io.left.rightmesh.util.RightMeshException;
+
+import java.nio.charset.Charset;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,10 +24,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RightMeshConnectorTest {
-    // Executes each task synchronously using Architecture Components.
-    @Rule
-    public InstantTaskExecutorRule rule = new InstantTaskExecutorRule();
-
     private static final int MESH_PORT = 5001;
 
     @Mock
@@ -86,9 +83,12 @@ public class RightMeshConnectorTest {
     public void sendDataReliable_isCalled() throws RightMeshException {
         String payload = "abc";
 
-        spyRightMeshConnector.sendDataReliable(meshId, payload.getBytes());
+        spyRightMeshConnector.sendDataReliable(meshId,
+                payload.getBytes(Charset.forName("UTF-8")));
 
-        verify(androidMeshManager).sendDataReliable(any(), anyInt(), eq(payload.getBytes()));
-        verify(spyRightMeshConnector).sendDataReliable(any(), eq(payload.getBytes()));
+        verify(androidMeshManager).sendDataReliable(any(), anyInt(),
+                eq(payload.getBytes(Charset.forName("UTF-8"))));
+        verify(spyRightMeshConnector).sendDataReliable(any(),
+                eq(payload.getBytes(Charset.forName("UTF-8"))));
     }
 }
